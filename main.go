@@ -46,6 +46,10 @@ func (ap AudacityProject) Compress(outputdir string) error {
 	zf := archivex.TarFile{}
 	a := filepath.Join(outputdir, ap.ProjectName+".tar.gz")
 
+	if _, err := os.Stat(ap.ProjectName + ".tar.gz"); err == nil && !*clobber {
+		return nil
+	}
+
 	if e := zf.Create(a); e != nil {
 		return e
 	}
@@ -98,9 +102,10 @@ func Locate(root string) []AudacityProject {
 }
 
 var (
-	app    = kingpin.New("audacity-compresser", "A stupid tool to locate and compress audacity project data")
-	root   = app.Arg("root", "Root Path to parse").Required().String()
-	output = app.Flag("output", "Output dir.  Empty means place in the same directory as the project").Short('o').Default("").String()
+	app     = kingpin.New("audacity-compresser", "A stupid tool to locate and compress audacity project data")
+	root    = app.Arg("root", "Root Path to parse").Required().String()
+	output  = app.Flag("output", "Output dir.  Empty means place in the same directory as the project").Short('o').Default("").String()
+	clobber = app.Flag("clobber", "Forcibly overwrite output files. Default skips files that already exist").Short('c').Default("false").Bool()
 )
 
 func main() {
